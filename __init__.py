@@ -30,7 +30,9 @@ bl_info = {
 }
 
 
+import argparse
 import importlib
+import threading
 
 import bpy
 from bpy.props import (
@@ -47,7 +49,7 @@ from bpy.props import (
 
 When enabled and active this panel will use pythonosc
 and a modal operator to regularly poll an OSC path.
-Something like: address="/bpy_externall/filepath"
+Something like: address="/filepath"
 
 The OSC path will be queued with a full python filepath
 that Blender must execute. After execution the modal
@@ -68,14 +70,19 @@ FOUND = 1
 STOPPED = 2
 RUNNING = 3
 
+
 try:
     STATUS = FOUND
-    if not ('pythonosc' in locals()):
-        from pythonosc import osc_message_builder
-        from pythonosc import udp_client
-        print('bp_externall loaded pythonosc')
-    else:
+    if ('pythonosc' in locals()):
         print('bp_externall : reload event. handled')
+    else:
+        # from pythonosc import osc_message_builder
+        # from pythonosc import udp_client
+        import pythonosc
+        from pythonosc import osc_server
+        from pythonosc import dispatcher
+        print('bp_externall loaded pythonosc')
+
 except:
     STATUS = NOT_FOUND
     print('python osc not found!, or failed to reimport')
@@ -84,14 +91,38 @@ except:
 osc_statemachine = {'status': STATUS}
 
 
+# def filepath_handler(unused_addr, args, fp):
+#     try:
+#         print("[{0}] ~ {1}".format(args[0], args[1](fp)))
+#     except ValueError: pass
+
+def filepath_handler(uh, fp):
+    print('yesssss', fp)
+
+
 def start_server_comms():
     ip = "127.0.0.1"
     port = 6449
-    client = udp_client.UDPClient(ip, port)
-    osc_statemachine['status'] = RUNNING
-    osc_msg = osc_message_builder.OscMessageBuilder
-    osc_statemachine['osc_msg'] = osc_msg
-    osc_statemachine['client'] = client
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--ip", default=ip, help="The ip to listen on")
+    parser.add_argument("--port", type=int, default=port, help="The port to listen on")
+    args = parser.parse_args()
+
+    disp = dispatcher.Dispatcher()
+    disp.map("/filepath", filepath_handler)
+    # disp.map("/volume", print_volume_handler, "Volume")
+    # disp.map("/logvolume", print_compute_handler, "Log volume", math.log)
+    osc_statemachine['dispatcher'] = disp
+    osc_statemachine['args'] = args
+
+    # server = osc_server.ThreadingOSCUDPServer((args.ip, args.port), disp)
+    server = osc_server.ForkingOSCUDPServer((args.ip, args.port), disp)
+    server_thread = threading.Thread(target=server.serve_forever)
+    osc_statemachine['server'] = server
+    server_thread.start()
+
+    print("Serving on {}".format(server.server_address))
 
 
 class BPYExternallOscClient(bpy.types.Operator, object):
@@ -109,6 +140,7 @@ class BPYExternallOscClient(bpy.types.Operator, object):
     def modal(self, context, event):
 
         if osc_statemachine['status'] == STOPPED:
+            osc_statemachine['server'].shutdown()
             self.cancel(context)
             return {'FINISHED'}
 
@@ -125,9 +157,8 @@ class BPYExternallOscClient(bpy.types.Operator, object):
             self._timer = wm.event_timer_add(self.speed, context.window)
             wm.modal_handler_add(self)
 
-            status = osc_statemachine.get('status')
-            if status in {FOUND, STOPPED}:
-                start_server_comms()
+            osc_statemachine['status'] = RUNNING
+            start_server_comms()
 
         if type_op == 'end':
             osc_statemachine['status'] = STOPPED
@@ -166,7 +197,7 @@ class BPYExternallOSCpanel(bpy.types.Panel):
         if state in {FOUND, STOPPED}:
             tstr = 'start'
         elif state == RUNNING:
-            col.label('listening on /bpy_externall/filepath')
+            col.label('listening on /filepath')
             tstr = 'end'
 
         if tstr:
