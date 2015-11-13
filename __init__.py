@@ -21,31 +21,11 @@ import importlib
 import bpy
 from bpy.props import BoolProperty, BoolVectorProperty, StringProperty, FloatProperty
 
-# from FLOW.core.mechanisms import updateSD
-# from FLOW.node_tree import FlowCustomTreeNode
 
 FOUND = 1
 RUNNING = 3
 DISABLED = 2
 NOT_FOUND = 0
-
-# try:
-#     importlib.import_module('osc_message_builder', 'pythonosc')
-#     importlib.import_module('osc_message_builder', 'udp_client')
-#     #from pythonosc import osc_message_builder
-#     #from pythonosc import udp_client
-#     STATUS = FOUND
-# except:
-#     if "bpy" in locals():
-#         try:
-#             importlib.reload('osc_message_builder', 'pythonosc')
-#             importlib.reload('osc_message_builder', 'udp_client')
-#             STATUS = FOUND
-#         except:
-#             print('failed to reimport pythonosc')
-#     else:
-#         print('python osc not found!')
-#         STATUS = NOT_FOUND
 
 try:
     from pythonosc import osc_message_builder
@@ -58,24 +38,6 @@ except:
 
 osc_statemachine = {'status': STATUS}
 
-
-default_synthdef = r"""(
-SynthDef.new(\tone, {
-    arg freq=40, nharm=12, detune=0.2, gate=0, pan=0, amp=1, out=0;
-    var sig, env;
-    env = EnvGen.kr(Env.adsr(0.05, 0.1, 0.5, 3), gate);
-    sig = Blip.ar(
-        freq *
-        LFNoise1.kr(0.2!16).bipolar(detune.neg, detune).midiratio,
-        nharm
-    );
-    sig = sig * LFNoise1.kr(0.5!16).exprange(0.1, 1);
-    sig = Splay.ar(sig);
-    sig = Balance2.ar(sig[0], sig[1], pan);
-    sig = sig * env * amp;
-    Out.ar(out, sig);
-}).add
-)"""
 
 
 def start_server_comms():
@@ -130,35 +92,6 @@ def send_synthdef_str(_str_):
         client.send(msg)
 
 
-def send_synthdef_trigger():
-    osc_msg = osc_statemachine.get('osc_msg')
-    if osc_msg:
-
-        msg = osc_msg(address='/flow/triggerSynth')
-        msg.add_arg('tone')
-        msg = msg.build()
-
-        client = osc_statemachine.get('client')
-        print('sending synthdef trigger')
-        client.send(msg)
-
-
-def send_synthdef_free(_str_=''):
-    osc_msg = osc_statemachine.get('osc_msg')
-    if osc_msg:
-        if _str_:
-            msg = osc_msg(address='/flow/freeAll')
-            msg.add_arg('freeAll')
-        else:
-            msg = osc_msg(address='/flow/freeSynth')
-            msg.add_arg('free')
-
-        msg = msg.build()
-
-        client = osc_statemachine.get('client')
-        print('sending free.synth')
-        client.send(msg)
-
 
 class SoundPetalSendSynthdef(bpy.types.Operator, object):
     """Send SynthDef over OSC"""
@@ -184,12 +117,6 @@ class SoundPetalSendSynthdef(bpy.types.Operator, object):
                 print('sending predefined')
                 send_synthdef_str(default_synthdef)
 
-        if type_op == 'trigger':
-            send_synthdef_trigger()
-        if type_op == 'free':
-            send_synthdef_free()
-        if type_op == 'freeAll':
-            send_synthdef_free('all')
 
     def execute(self, context):
         self.event_dispatcher(context, self.mode)
