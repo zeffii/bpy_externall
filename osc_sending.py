@@ -8,6 +8,11 @@ from pythonosc import udp_client
 IP = "ip of OSC server"
 PORT = "port OSC server listens on"
 
+paths = [
+  'path one',
+  'path two',
+  'path three']
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -17,9 +22,9 @@ if __name__ == "__main__":
 
     client = udp_client.UDPClient(args.ip, args.port)
 
-    for x in range(10):
-        msg = osc_message_builder.OscMessageBuilder(address="/filepath")
-        msg.add_arg(random.random())
-        msg = msg.build()
-        client.send(msg)
-        time.sleep(1)
+
+    msg = osc_message_builder.OscMessageBuilder(address="/filepath")
+    msg.add_arg(random.choice(paths))
+    msg = msg.build()
+    client.send(msg)
+

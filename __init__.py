@@ -89,15 +89,29 @@ except:
 
 
 osc_statemachine = {'status': STATUS}
+osc_statemachine['filepath'] = ""
+osc_statemachine['tempfile'] = '/home/zeffii/Desktop/OSC/fp.io'
 
-
-# def filepath_handler(unused_addr, args, fp):
-#     try:
-#         print("[{0}] ~ {1}".format(args[0], args[1](fp)))
-#     except ValueError: pass
 
 def filepath_handler(uh, fp):
-    print('yesssss', fp)
+    temp_path = osc_statemachine['tempfile']
+    with open('/home/zeffii/Desktop/OSC/fp.io', 'w') as f:
+        print('received: ', fp)
+        f.write(fp)
+
+
+def filepath_read_handler():
+    temp_path = osc_statemachine['tempfile']
+
+    fp = ""
+    with open(temp_path) as f:
+        fp = f.read()
+
+    # make empty file
+    with open(temp_path, 'w') as f:
+        pass
+
+    return fp
 
 
 def start_server_comms():
@@ -111,12 +125,9 @@ def start_server_comms():
 
     disp = dispatcher.Dispatcher()
     disp.map("/filepath", filepath_handler)
-    # disp.map("/volume", print_volume_handler, "Volume")
-    # disp.map("/logvolume", print_compute_handler, "Log volume", math.log)
     osc_statemachine['dispatcher'] = disp
     osc_statemachine['args'] = args
 
-    # server = osc_server.ThreadingOSCUDPServer((args.ip, args.port), disp)
     server = osc_server.ForkingOSCUDPServer((args.ip, args.port), disp)
     server_thread = threading.Thread(target=server.serve_forever)
     osc_statemachine['server'] = server
@@ -135,7 +146,11 @@ class BPYExternallOscClient(bpy.types.Operator, object):
     mode = StringProperty()
 
     def process(self):
-        print('meee! print osc findings')
+        fp = filepath_read_handler()
+        print('process: ', fp)
+        stripped_fp = fp.strip()
+        if stripped_fp:
+            print('action', stripped_fp)
 
     def modal(self, context, event):
 
@@ -203,7 +218,7 @@ class BPYExternallOSCpanel(bpy.types.Panel):
         if tstr:
             op = col.operator('wm.bpy_externall_osc_server', text=tstr)
             op.mode = tstr
-            op.speed = 2
+            op.speed = 1
 
 
 def register():
