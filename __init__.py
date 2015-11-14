@@ -62,6 +62,7 @@ def filepath_read_handler():
     fp = ""
     with open(temp_path) as f:
         fp = f.read()
+        print('fp: read', fp)
 
     empty_file_content(fp, temp_path)
     return fp.strip()
@@ -84,7 +85,7 @@ def execute_file(fp):
 class BPYExternallClient(bpy.types.Operator, object):
 
     bl_idname = "wm.bpy_externall_server"
-    bl_label = "start and stop osc server"
+    bl_label = "start and stop server"
 
     _timer = None
     speed = FloatProperty()
