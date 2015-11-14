@@ -3,7 +3,7 @@ file_over_osc.py
 author: Dealga McArdle, 2015
 
 '''
-import argparse
+
 import time
 import sys
 import os.path

@@ -89,9 +89,18 @@ def filepath_read_handler():
 
 
 def execute_file(fp):
-    with open(fp) as f:
-        code = "".join(f)
-        exec(code)
+    # exec(open(fp).read())  # this fails when the file has imports.
+    texts = bpy.data.texts
+    tf = 'temp_file'
+    if tf in texts:
+        text = texts[tf]
+    else:
+        text = texts.new(tf)
+
+    text.from_string(open(fp).read())
+    ctx = bpy.context.copy()
+    ctx['edit_text'] = text
+    bpy.ops.text.run_script(ctx)
 
 
 def start_server_comms():
