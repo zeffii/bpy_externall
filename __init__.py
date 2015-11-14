@@ -51,8 +51,6 @@ try:
     if ('pythonosc' in locals()):
         print('bp_externall : reload event. handled')
     else:
-        # from pythonosc import osc_message_builder
-        # from pythonosc import udp_client
         import pythonosc
         from pythonosc import osc_server
         from pythonosc import dispatcher

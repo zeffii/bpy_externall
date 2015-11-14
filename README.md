@@ -6,10 +6,20 @@ dependencies:  requires the OSC module.
 ```python
 
 """
-## INSTALLATION python osc:
+## INSTALLATION 
 
-- https://pypi.python.org/pypi/python-osc#downloads
-- drop the zip/tar into Blender's modules folder
+  python-osc:
+
+  - https://pypi.python.org/pypi/python-osc#downloads
+  - Blender: drop the zip/tar into Blender's modules folder
+  - System python (3.4):  `python3.4 -m pip install python-osc`
+
+  'bpy_externall' add-on
+
+  - In UserPreferences "install from file", and navigate to 
+    the zip that contains this file.
+  - Save preferences and or Ctrl+U to store the addon's enabled state
+    in the default.blend
 
 ## RECEIVER
 
