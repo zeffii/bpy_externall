@@ -11,9 +11,7 @@ import os.path
 import sublime
 import sublime_plugin
 
-import pythonosc
-from pythonosc import osc_message_builder
-from pythonosc import udp_client
+TEMP_PATH = '/home/zeffii/Desktop/OSC/fp.io'
 
 
 class FileOverOsc(sublime_plugin.TextCommand):
@@ -22,9 +20,5 @@ class FileOverOsc(sublime_plugin.TextCommand):
         file_name = view.file_name()
         print(file_name)
 
-        client = udp_client.UDPClient("127.0.0.1", 6449)
-
-        msg = osc_message_builder.OscMessageBuilder(address="/filepath")
-        msg.add_arg(file_name)
-        msg = msg.build()
-        client.send(msg)
+        with open(TEMP_PATH, 'w') as f:
+            f.write(file_name)

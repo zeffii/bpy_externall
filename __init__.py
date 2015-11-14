@@ -30,9 +30,7 @@ bl_info = {
 }
 
 
-import argparse
 import importlib
-import threading
 
 import bpy
 from bpy.props import (
@@ -40,51 +38,29 @@ from bpy.props import (
 )
 
 
-NOT_FOUND = 0
-FOUND = 1
 STOPPED = 2
 RUNNING = 3
 
-
-try:
-    STATUS = FOUND
-    if ('pythonosc' in locals()):
-        print('bp_externall : reload event. handled')
-    else:
-        import pythonosc
-        from pythonosc import osc_server
-        from pythonosc import dispatcher
-        print('bp_externall loaded pythonosc')
-
-except:
-    STATUS = NOT_FOUND
-    print('python osc not found!, or failed to reimport')
+statemachine = {
+    'status': STOPPED,
+    'tempfile': '/home/zeffii/Desktop/OSC/fp.io'
+}
 
 
-osc_statemachine = {'status': STATUS}
-osc_statemachine['filepath'] = ""
-osc_statemachine['tempfile'] = '/home/zeffii/Desktop/OSC/fp.io'
-
-
-def filepath_handler(uh, fp):
-    temp_path = osc_statemachine['tempfile']
-    with open('/home/zeffii/Desktop/OSC/fp.io', 'w') as f:
-        print('received: ', fp)
-        f.write(fp)
+def empty_file_content(fp, temp_path):
+    if fp.strip():
+        with open(temp_path, 'w') as f:
+            pass
 
 
 def filepath_read_handler():
-    temp_path = osc_statemachine['tempfile']
+    temp_path = statemachine['tempfile']
 
     fp = ""
     with open(temp_path) as f:
         fp = f.read()
 
-    # make empty file
-    if fp.strip():
-        with open(temp_path, 'w') as f:
-            pass
-
+    empty_file_content(fp, temp_path)
     return fp.strip()
 
 
@@ -103,35 +79,9 @@ def execute_file(fp):
     bpy.ops.text.run_script(ctx)
 
 
-def start_server_comms():
-    ip = "127.0.0.1"
-    port = 6449
+class BPYExternallClient(bpy.types.Operator, object):
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--ip", default=ip, help="The ip to listen on")
-    parser.add_argument("--port", type=int, default=port, help="The port to listen on")
-    args = parser.parse_args()
-
-    disp = dispatcher.Dispatcher()
-    disp.map("/filepath", filepath_handler)
-    osc_statemachine['dispatcher'] = disp
-    osc_statemachine['args'] = args
-
-    try:
-        server = osc_server.ForkingOSCUDPServer((args.ip, args.port), disp)
-        osc_statemachine['server'] = server
-    except:
-        print('already active')
-        server = osc_statemachine['server']
-
-    server_thread = threading.Thread(target=server.serve_forever)
-    server_thread.start()
-    print("Serving on {}".format(server.server_address))
-
-
-class BPYExternallOscClient(bpy.types.Operator, object):
-
-    bl_idname = "wm.bpy_externall_osc_server"
+    bl_idname = "wm.bpy_externall_server"
     bl_label = "start and stop osc server"
 
     _timer = None
@@ -147,7 +97,7 @@ class BPYExternallOscClient(bpy.types.Operator, object):
 
     def modal(self, context, event):
 
-        if osc_statemachine['status'] == STOPPED:
+        if statemachine['status'] == STOPPED:
             self.cancel(context)
             return {'FINISHED'}
 
@@ -164,12 +114,8 @@ class BPYExternallOscClient(bpy.types.Operator, object):
             self._timer = wm.event_timer_add(self.speed, context.window)
             wm.modal_handler_add(self)
 
-            osc_statemachine['status'] = RUNNING
-            start_server_comms()
-
         if type_op == 'end':
-            osc_statemachine['server'].shutdown()
-            osc_statemachine['status'] = STOPPED
+            statemachine['status'] = STOPPED
 
     def execute(self, context):
         self.event_dispatcher(context, self.mode)
@@ -180,10 +126,10 @@ class BPYExternallOscClient(bpy.types.Operator, object):
         wm.event_timer_remove(self._timer)
 
 
-class BPYExternallOSCpanel(bpy.types.Panel):
+class BPYExternallPanel(bpy.types.Panel):
 
-    bl_idname = "BPYExternallOSCpanel"
-    bl_label = "bpy externall OSC panel"
+    bl_idname = "BPYExternallPanel"
+    bl_label = "bpy externall panel"
     bl_space_type = 'TEXT_EDITOR'
     bl_region_type = 'UI'
     # bl_options = {'DEFAULT_CLOSED'}
@@ -193,32 +139,27 @@ class BPYExternallOSCpanel(bpy.types.Panel):
         layout = self.layout
         col = layout.column()
 
-        state = osc_statemachine['status']
-
-        # exit early
-        if state == NOT_FOUND:
-            col.label('failed to (re)import pythonosc - see console')
-            return
+        state = statemachine['status']
 
         # promising! continue
         tstr = ''
-        if state in {FOUND, STOPPED}:
+        if state == STOPPED:
             tstr = 'start'
         elif state == RUNNING:
-            col.label('listening on /filepath')
+            col.label('listening on ' + statemachine['tempfile'])
             tstr = 'end'
 
         if tstr:
-            op = col.operator('wm.bpy_externall_osc_server', text=tstr)
+            op = col.operator('wm.bpy_externall_server', text=tstr)
             op.mode = tstr
             op.speed = 1
 
 
 def register():
-    bpy.utils.register_class(BPYExternallOSCpanel)
-    bpy.utils.register_class(BPYExternallOscClient)
+    bpy.utils.register_class(BPYExternallPanel)
+    bpy.utils.register_class(BPYExternallClient)
 
 
 def unregister():
-    bpy.utils.unregister_class(BPYExternallOSCpanel)
-    bpy.utils.unregister_class(BPYExternallOscClient)
+    bpy.utils.unregister_class(BPYExternallPanel)
+    bpy.utils.unregister_class(BPYExternallClient)
