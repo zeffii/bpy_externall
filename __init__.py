@@ -81,10 +81,17 @@ def filepath_read_handler():
         fp = f.read()
 
     # make empty file
-    with open(temp_path, 'w') as f:
-        pass
+    if fp.strip():
+        with open(temp_path, 'w') as f:
+            pass
 
     return fp.strip()
+
+
+def execute_file(fp):
+    with open(fp) as f:
+        code = "".join(f)
+        exec(code)
 
 
 def start_server_comms():
@@ -127,6 +134,7 @@ class BPYExternallOscClient(bpy.types.Operator, object):
         print('process: ', fp)
         if fp:
             print('-- action', fp)
+            execute_file(fp)
 
     def modal(self, context, event):
 
