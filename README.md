@@ -1,18 +1,10 @@
 # bpy_externall
 execute scripts in a running Blender session from any decent text editor.
 
-dependencies:  requires the python-osc module, but this can be done much simpler without it (I see now after coding it the hard way)
-
 ```python
 
 """
 ## INSTALLATION 
-
-  python-osc:
-
-  - https://pypi.python.org/pypi/python-osc#downloads
-  - Blender: drop the zip/tar into Blender's modules folder
-  - System python (3.4):  `python3.4 -m pip install python-osc`
 
   'bpy_externall' add-on:
 
@@ -23,23 +15,20 @@ dependencies:  requires the python-osc module, but this can be done much simpler
 
 ## RECEIVER
 
-When enabled and active this panel will use pythonosc
-and a modal operator to regularly poll an OSC path.
-Something like: address="/filepath"
+When enabled and active this panel will use simple file reading to
+see if a file is empty or not. If the file isn't empty then it is
+assumed that its contents is infact a filename: a filepath to a .py 
+file to be executed.
 
-The OSC path will be queued with a full python filepath
-that Blender must execute. After execution the modal
-operator continues to poll and do nothing until a new
-filepath is queued.
+If the file contains a filename, it will exec the found path, and then empty the file for the next loop. When the file contains nothing, the 
+the modal operator will skip any execution.
 
 ## SENDER
 
 The exact implementation will be up to the user. This
 repository will provide a small plugin for Sublime
-Text to demonstrate the OSC sending.
-
-see `osc_sending.py` for an example of how to send a filepath 
-to the temp.
+Text to demonstrate how you might send a filepath 
+to the temp file.
 
 """
 

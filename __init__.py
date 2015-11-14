@@ -43,7 +43,7 @@ RUNNING = 3
 
 statemachine = {
     'status': STOPPED,
-    'tempfile': '/home/zeffii/Desktop/OSC/fp.io'
+    'tempfile': '/home/zeffii/Desktop/IO/fp.io'
 }
 
 
