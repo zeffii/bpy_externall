@@ -84,7 +84,7 @@ def filepath_read_handler():
     with open(temp_path, 'w') as f:
         pass
 
-    return fp
+    return fp.strip()
 
 
 def start_server_comms():
@@ -125,14 +125,12 @@ class BPYExternallOscClient(bpy.types.Operator, object):
     def process(self):
         fp = filepath_read_handler()
         print('process: ', fp)
-        stripped_fp = fp.strip()
-        if stripped_fp:
-            print('action', stripped_fp)
+        if fp:
+            print('-- action', fp)
 
     def modal(self, context, event):
 
         if osc_statemachine['status'] == STOPPED:
-            # osc_statemachine['server'].shutdown()
             self.cancel(context)
             return {'FINISHED'}
 

@@ -18,8 +18,8 @@ dependencies:  requires the python-osc module, but this can be done much simpler
 
   - In UserPreferences "install from file", and navigate to 
     the zip that contains this file.
-  - Save preferences and or Ctrl+U to store the addon's enabled state
-    in the default.blend
+  - Save preferences and or Ctrl+U to store the addon's enabled
+    state in the default.blend
 
 ## RECEIVER
 
@@ -38,7 +38,8 @@ The exact implementation will be up to the user. This
 repository will provide a small plugin for Sublime
 Text to demonstrate the OSC sending.
 
-see `osc_sending.py` for an example of how to send a filepath to the temp.
+see `osc_sending.py` for an example of how to send a filepath 
+to the temp.
 
 """
 
