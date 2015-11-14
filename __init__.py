@@ -128,11 +128,15 @@ def start_server_comms():
     osc_statemachine['dispatcher'] = disp
     osc_statemachine['args'] = args
 
-    server = osc_server.ForkingOSCUDPServer((args.ip, args.port), disp)
-    server_thread = threading.Thread(target=server.serve_forever)
-    osc_statemachine['server'] = server
-    server_thread.start()
+    try:
+        server = osc_server.ForkingOSCUDPServer((args.ip, args.port), disp)
+        osc_statemachine['server'] = server
+    except:
+        print('already active')
+        server = osc_statemachine['server']
 
+    server_thread = threading.Thread(target=server.serve_forever)
+    server_thread.start()
     print("Serving on {}".format(server.server_address))
 
 
@@ -155,7 +159,7 @@ class BPYExternallOscClient(bpy.types.Operator, object):
     def modal(self, context, event):
 
         if osc_statemachine['status'] == STOPPED:
-            osc_statemachine['server'].shutdown()
+            # osc_statemachine['server'].shutdown()
             self.cancel(context)
             return {'FINISHED'}
 
@@ -176,6 +180,7 @@ class BPYExternallOscClient(bpy.types.Operator, object):
             start_server_comms()
 
         if type_op == 'end':
+            osc_statemachine['server'].shutdown()
             osc_statemachine['status'] = STOPPED
 
     def execute(self, context):
