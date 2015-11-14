@@ -54,6 +54,9 @@ def empty_file_content(fp, temp_path):
 
 
 def filepath_read_handler():
+    """
+    this reads the filepath io file, and returns the filepath found.
+    """
     temp_path = statemachine['tempfile']
 
     fp = ""
@@ -65,7 +68,6 @@ def filepath_read_handler():
 
 
 def execute_file(fp):
-    # exec(open(fp).read())  # this fails when the file has imports.
     texts = bpy.data.texts
     tf = 'temp_file'
     if tf in texts:
@@ -109,6 +111,7 @@ class BPYExternallClient(bpy.types.Operator, object):
 
     def event_dispatcher(self, context, type_op):
         if type_op == 'start':
+            statemachine['status'] = RUNNING
 
             wm = context.window_manager
             self._timer = wm.event_timer_add(self.speed, context.window)
