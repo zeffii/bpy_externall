@@ -1,7 +1,7 @@
 # bpy_externall
 execute scripts in a running Blender session from any decent text editor.
 
-dependencies:  requires the OSC module.
+dependencies:  requires the python-osc module, but this can be done much simpler without it (I see now after coding it the hard way)
 
 ```python
 
@@ -14,7 +14,7 @@ dependencies:  requires the OSC module.
   - Blender: drop the zip/tar into Blender's modules folder
   - System python (3.4):  `python3.4 -m pip install python-osc`
 
-  'bpy_externall' add-on
+  'bpy_externall' add-on:
 
   - In UserPreferences "install from file", and navigate to 
     the zip that contains this file.
@@ -37,6 +37,8 @@ filepath is queued.
 The exact implementation will be up to the user. This
 repository will provide a small plugin for Sublime
 Text to demonstrate the OSC sending.
+
+see `osc_sending.py` for an example of how to send a filepath to the temp.
 
 """
 
