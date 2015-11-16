@@ -63,7 +63,7 @@ def filepath_read_handler():
     fp = ""
     with open(temp_path) as f:
         fp = f.read()
-        print('fp: read', fp)
+        # print('fp: read', fp)
 
     empty_file_content(fp, temp_path)
     return fp.strip()
@@ -97,10 +97,11 @@ class BPYExternallClient(bpy.types.Operator, object):
     _timer = None
     speed = FloatProperty()
     mode = StringProperty()
+    last_action = StringProperty()
 
     def process(self):
         fp = filepath_read_handler()
-        print('process: ', fp)
+        # print('process: ', fp)
         if fp:
             print('-- action', fp)
             execute_file(fp)
