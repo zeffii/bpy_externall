@@ -34,3 +34,30 @@ to the temp file.
 """
 
 ```
+
+You can use the Blender Python console to start and end the addon:
+```
+>>> server = bpy.ops.wm.bpy_externall_server
+>>> server(speed=1, mode="start")
+{'RUNNING_MODAL'}
+
+>>> server(mode="end")
+ending modal operator
+{'RUNNING_MODAL'}
+```
+
+You can even start the addon and end the addon via a script
+
+```
+# some script launching blender would run this first.
+import addon_utils
+addon_utils.enable("bpy_externall")
+# addon_utils.enable("bpy_externall-master")  # if you installed from zip
+
+# start listening
+bpy.ops.wm.bpy_externall_server(speed=1, mode="start")
+
+# send this in one of your external scripts to stop listening
+bpy.ops.wm.bpy_externall_server(mode="end")
+
+```
