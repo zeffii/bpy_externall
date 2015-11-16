@@ -127,6 +127,7 @@ class BPYExternallClient(bpy.types.Operator, object):
             wm.modal_handler_add(self)
 
         if type_op == 'end':
+            print('ending modal operator')
             statemachine['status'] = STOPPED
 
     def execute(self, context):
