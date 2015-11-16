@@ -31,6 +31,7 @@ bl_info = {
 
 
 import sys
+import os
 import importlib
 
 import bpy
@@ -44,9 +45,8 @@ RUNNING = 3
 
 statemachine = {
     'status': STOPPED,
-    'tempfile': '/home/zeffii/Desktop/IO/fp.io'
+    'tempfile': '/tmp/bpy_external.io'
 }
-
 
 def empty_file_content(fp, temp_path):
     if fp.strip():
@@ -54,11 +54,18 @@ def empty_file_content(fp, temp_path):
             pass
 
 
+def check_file(path):
+    if not os.path.isfile(path):
+        open(path, 'w').close()
+
+
 def filepath_read_handler():
     """
     this reads the filepath io file, and returns the filepath found.
     """
     temp_path = statemachine['tempfile']
+    check_file(temp_path)
+
 
     fp = ""
     with open(temp_path) as f:
