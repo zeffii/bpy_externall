@@ -1,13 +1,13 @@
 import sublime
 import sublime_plugin
 
-TEMP_PATH = '/home/zeffii/Desktop/IO/fp.io'
+TEMP_PATH = '/tmp/bpy_external.io'
 
 # you can not symlink this file into the SublimeText folder
 # sublime will not find its contents. You must copy it to
-#    /home/zeffii/.config/sublime-text-3/Packages/User  
+#    /home/zeffii/.config/sublime-text-3/Packages/User
 # or equivalent.
-# 
+#
 # hotkey, suggestion.
 # { "keys": ["ctrl+shift+a"], "command": "file_over_io" }
 
