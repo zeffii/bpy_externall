@@ -30,6 +30,7 @@ bl_info = {
 }
 
 
+import sys
 import importlib
 
 import bpy
@@ -79,7 +80,13 @@ def execute_file(fp):
     text.from_string(open(fp).read())
     ctx = bpy.context.copy()
     ctx['edit_text'] = text
-    bpy.ops.text.run_script(ctx)
+
+    try:
+        bpy.ops.text.run_script(ctx)
+    except Exception as err:
+        sys.stderr.write('ERROR: %s\n' % str(err))
+        # print(sys.exc_info()[-1].tb_frame.f_code)
+        # print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno))
 
 
 class BPYExternallClient(bpy.types.Operator, object):

@@ -20,8 +20,9 @@ see if a file is empty or not. If the file isn't empty then it is
 assumed that its contents is infact a filename: a filepath to a .py 
 file to be executed.
 
-If the file contains a filename, it will exec the found path, and then empty the file for the next loop. When the file contains nothing, the 
-the modal operator will skip any execution.
+If the file contains a filename, it will exec the found path, and
+then empty the file for the next loop. When the file contains
+nothing, the modal operator will skip any execution.
 
 ## SENDER
 
