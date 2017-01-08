@@ -52,7 +52,7 @@ RUNNING = 3
 
 statemachine = {
     'status': STOPPED,
-    'tempfile': str(Path(tempfile.gettempdir()) / "bpy_externall.io")
+    'tempfile': str(Path(tempfile.gettempdir()) / "bpy_external.io")
 }
 
 
@@ -110,7 +110,7 @@ def execute_file(fp):
 class BPYExternallClient(bpy.types.Operator, object):
 
     bl_idname = "wm.bpy_externall_server"
-    bl_label = "start and stop server"
+    bl_label = "Start and stop Externall server"
 
     _timer = None
     speed = FloatProperty()
