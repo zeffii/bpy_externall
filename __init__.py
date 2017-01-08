@@ -58,12 +58,14 @@ statemachine = {
 
 def empty_file_content(fp, temp_path):
     if fp.strip():
+        log.debug("Stripping file contents...")
         with open(temp_path, 'w'):
             pass
 
 
 def check_file(path):
     if not os.path.isfile(path):
+        log.debug("Closing file {}".format(path))
         open(path, 'w').close()
 
 
@@ -77,7 +79,7 @@ def filepath_read_handler():
     fp = ""
     with open(temp_path) as f:
         fp = f.read()
-        # print('fp: read', fp)
+        logging.debug('File path: {}'.format(fp))
 
     empty_file_content(fp, temp_path)
     return fp.strip()
@@ -95,12 +97,14 @@ def execute_file(fp):
     ctx = bpy.context.copy()
     ctx['edit_text'] = text
 
+    log.debug(text)
+
     try:
         bpy.ops.text.run_script(ctx)
     except Exception as err:
-        log.error('ERROR: {}\n'.format(str(err)))
-        # print(sys.exc_info()[-1].tb_frame.f_code)
-        # print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno))
+        log.error('ERROR: {}'.format(str(err)))
+        log.debug(sys.exc_info()[-1].tb_frame.f_code)
+        log.debug('Error on line {}'.format(sys.exc_info()[-1].tb_lineno))
 
 
 class BPYExternallClient(bpy.types.Operator, object):
@@ -111,18 +115,17 @@ class BPYExternallClient(bpy.types.Operator, object):
     _timer = None
     speed = FloatProperty()
     mode = StringProperty()
-    last_action = StringProperty()
 
     def process(self):
         fp = filepath_read_handler()
-        # print('process: ', fp)
+        log.debug('Processing: {}'.format(fp))
         if fp:
-            print('-- action', fp)
+            logging.debug('-- action {}'.format(fp))
             execute_file(fp)
 
     def modal(self, context, event):
-
         if statemachine['status'] == STOPPED:
+            logging.debug("Closing server...")
             self.cancel(context)
             return {'FINISHED'}
 
@@ -134,14 +137,14 @@ class BPYExternallClient(bpy.types.Operator, object):
 
     def event_dispatcher(self, context, type_op):
         if type_op == 'start':
+            log.info("Entering modal operator...")
             statemachine['status'] = RUNNING
-
             wm = context.window_manager
             self._timer = wm.event_timer_add(self.speed, context.window)
             wm.modal_handler_add(self)
 
         if type_op == 'end':
-            print('ending modal operator')
+            logging.info('Exiting modal operator...')
             statemachine['status'] = STOPPED
 
     def execute(self, context):
