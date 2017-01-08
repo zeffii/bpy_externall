@@ -18,15 +18,15 @@
 
 bl_info = {
     "name": "Externall",
-    "author": "Dealga McArdle",
+    "author": "Dealga McArdle, italic",
     "version": (0, 2),
     "blender": (2, 7, 6),
-    "location": "",
-    "description": "",
+    "location": "Blender Text Editor -> Tools, various text editors: Vim, Sublime, Atom",
+    "description": "Connect with external text editors in a generic way",
+    "wiki_url": "https://github.com/zeffii/bpy_externall",
+    "tracker_url": "https://github.com/zeffii/bpy_externall/issues",
+    "category": "Text Editor",
     "warning": "",
-    "wiki_url": "",
-    "tracker_url": "",
-    "category": "Text Editor"
 }
 
 
