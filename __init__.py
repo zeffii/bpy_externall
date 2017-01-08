@@ -17,9 +17,9 @@
 # ##### END GPL LICENSE BLOCK #####
 
 bl_info = {
-    "name": "bpy externall",
+    "name": "Externall",
     "author": "Dealga McArdle",
-    "version": (0, 1),
+    "version": (0, 2),
     "blender": (2, 7, 6),
     "location": "",
     "description": "",
@@ -191,6 +191,10 @@ def register():
 
 
 def unregister():
+    try:
+        bpy.ops.wm.bpy_externall_server(mode="end")
+    except:
+        pass
     bpy.utils.unregister_class(BPYExternallPanel)
     bpy.utils.unregister_class(BPYExternallClient)
 
