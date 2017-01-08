@@ -1,7 +1,9 @@
 import sublime
 import sublime_plugin
+import tempfile
+import os
 
-TEMP_PATH = '/tmp/bpy_external.io'
+TEMP_PATH = os.path.join(tempfile.gettempdir(), 'bpy_external.io')
 
 # you can not symlink this file into the SublimeText folder
 # sublime will not find its contents. You must copy it to

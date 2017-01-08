@@ -17,27 +17,34 @@
 # ##### END GPL LICENSE BLOCK #####
 
 bl_info = {
-    "name": "bpy externall",
-    "author": "Dealga McArdle",
-    "version": (0, 1),
+    "name": "Externall",
+    "author": "Dealga McArdle, italic",
+    "version": (0, 2),
     "blender": (2, 7, 6),
-    "location": "",
-    "description": "",
+    "location": "Blender Text Editor -> Tools, various text editors: Vim, Sublime, Atom",
+    "description": "Connect with external text editors in a generic way",
+    "wiki_url": "https://github.com/zeffii/bpy_externall",
+    "tracker_url": "https://github.com/zeffii/bpy_externall/issues",
+    "category": "Text Editor",
     "warning": "",
-    "wiki_url": "",
-    "tracker_url": "",
-    "category": "Text Editor"
 }
 
 
 import sys
 import os
-import importlib
+import logging
+import tempfile
+from pathlib import Path
 
 import bpy
-from bpy.props import (
-    BoolProperty, StringProperty, FloatProperty
+from bpy.props import StringProperty, FloatProperty
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)-15s %(levelname)8s %(name)s %(message)s"
 )
+log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
 
 
 STOPPED = 2
@@ -45,17 +52,20 @@ RUNNING = 3
 
 statemachine = {
     'status': STOPPED,
-    'tempfile': '/tmp/bpy_external.io'
+    'tempfile': str(Path(tempfile.gettempdir()) / "bpy_external.io")
 }
+
 
 def empty_file_content(fp, temp_path):
     if fp.strip():
-        with open(temp_path, 'w') as f:
+        log.debug("Stripping file contents...")
+        with open(temp_path, 'w'):
             pass
 
 
 def check_file(path):
     if not os.path.isfile(path):
+        log.debug("Closing file {}".format(path))
         open(path, 'w').close()
 
 
@@ -66,11 +76,10 @@ def filepath_read_handler():
     temp_path = statemachine['tempfile']
     check_file(temp_path)
 
-
     fp = ""
     with open(temp_path) as f:
         fp = f.read()
-        # print('fp: read', fp)
+        logging.debug('File path: {}'.format(fp))
 
     empty_file_content(fp, temp_path)
     return fp.strip()
@@ -88,34 +97,35 @@ def execute_file(fp):
     ctx = bpy.context.copy()
     ctx['edit_text'] = text
 
+    log.debug(text)
+
     try:
         bpy.ops.text.run_script(ctx)
     except Exception as err:
-        sys.stderr.write('ERROR: %s\n' % str(err))
-        # print(sys.exc_info()[-1].tb_frame.f_code)
-        # print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno))
+        log.error('ERROR: {}'.format(str(err)))
+        log.debug(sys.exc_info()[-1].tb_frame.f_code)
+        log.debug('Error on line {}'.format(sys.exc_info()[-1].tb_lineno))
 
 
 class BPYExternallClient(bpy.types.Operator, object):
 
     bl_idname = "wm.bpy_externall_server"
-    bl_label = "start and stop server"
+    bl_label = "Start and stop Externall server"
 
     _timer = None
     speed = FloatProperty()
     mode = StringProperty()
-    last_action = StringProperty()
 
     def process(self):
         fp = filepath_read_handler()
-        # print('process: ', fp)
+        log.debug('Processing: {}'.format(fp))
         if fp:
-            print('-- action', fp)
+            logging.debug('-- action {}'.format(fp))
             execute_file(fp)
 
     def modal(self, context, event):
-
         if statemachine['status'] == STOPPED:
+            logging.debug("Closing server...")
             self.cancel(context)
             return {'FINISHED'}
 
@@ -127,14 +137,14 @@ class BPYExternallClient(bpy.types.Operator, object):
 
     def event_dispatcher(self, context, type_op):
         if type_op == 'start':
+            log.info("Entering modal operator...")
             statemachine['status'] = RUNNING
-
             wm = context.window_manager
             self._timer = wm.event_timer_add(self.speed, context.window)
             wm.modal_handler_add(self)
 
         if type_op == 'end':
-            print('ending modal operator')
+            logging.info('Exiting modal operator...')
             statemachine['status'] = STOPPED
 
     def execute(self, context):
@@ -181,5 +191,14 @@ def register():
 
 
 def unregister():
+    try:
+        bpy.ops.wm.bpy_externall_server(mode="end")
+    except:
+        pass
     bpy.utils.unregister_class(BPYExternallPanel)
     bpy.utils.unregister_class(BPYExternallClient)
+
+
+if __name__ == '__main__':
+    register()
+    bpy.ops.wm.bpy_externall_server(speed=1, mode="start")
