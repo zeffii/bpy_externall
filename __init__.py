@@ -33,11 +33,11 @@ bl_info = {
 import sys
 import os
 import logging
+import tempfile
+from pathlib import Path
 
 import bpy
-from bpy.props import (
-    StringProperty, FloatProperty
-)
+from bpy.props import StringProperty, FloatProperty
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -52,7 +52,7 @@ RUNNING = 3
 
 statemachine = {
     'status': STOPPED,
-    'tempfile': '/tmp/bpy_external.io'
+    'tempfile': str(Path(tempfile.gettempdir()) / "bpy_externall.io")
 }
 
 
