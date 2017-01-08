@@ -40,11 +40,11 @@ import bpy
 from bpy.props import StringProperty, FloatProperty
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format="%(asctime)-15s %(levelname)8s %(name)s %(message)s"
 )
 log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
+log.setLevel(logging.INFO)
 
 
 STOPPED = 2
