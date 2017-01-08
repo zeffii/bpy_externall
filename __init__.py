@@ -32,12 +32,19 @@ bl_info = {
 
 import sys
 import os
-import importlib
+import logging
 
 import bpy
 from bpy.props import (
-    BoolProperty, StringProperty, FloatProperty
+    StringProperty, FloatProperty
 )
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)-15s %(levelname)8s %(name)s %(message)s"
+)
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 
 STOPPED = 2
@@ -48,9 +55,10 @@ statemachine = {
     'tempfile': '/tmp/bpy_external.io'
 }
 
+
 def empty_file_content(fp, temp_path):
     if fp.strip():
-        with open(temp_path, 'w') as f:
+        with open(temp_path, 'w'):
             pass
 
 
@@ -65,7 +73,6 @@ def filepath_read_handler():
     """
     temp_path = statemachine['tempfile']
     check_file(temp_path)
-
 
     fp = ""
     with open(temp_path) as f:
@@ -91,7 +98,7 @@ def execute_file(fp):
     try:
         bpy.ops.text.run_script(ctx)
     except Exception as err:
-        sys.stderr.write('ERROR: %s\n' % str(err))
+        log.error('ERROR: {}\n'.format(str(err)))
         # print(sys.exc_info()[-1].tb_frame.f_code)
         # print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno))
 
@@ -183,3 +190,8 @@ def register():
 def unregister():
     bpy.utils.unregister_class(BPYExternallPanel)
     bpy.utils.unregister_class(BPYExternallClient)
+
+
+if __name__ == '__main__':
+    register()
+    bpy.ops.wm.bpy_externall_server(speed=1, mode="start")
