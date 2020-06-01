@@ -20,7 +20,7 @@ bl_info = {
     "name": "Externall",
     "author": "Dealga McArdle, italic",
     "version": (0, 2),
-    "blender": (2, 7, 6),
+    "blender": (2, 80, 0),
     "location": "Blender Text Editor -> Tools, various text editors: Vim, Sublime, Atom",
     "description": "Connect with external text editors in a generic way",
     "wiki_url": "https://github.com/zeffii/bpy_externall",
@@ -38,6 +38,7 @@ from pathlib import Path
 
 import bpy
 from bpy.props import StringProperty, FloatProperty
+from bpy.types import Operator, Panel
 
 logging.basicConfig(
     level=logging.INFO,
@@ -107,14 +108,16 @@ def execute_file(fp):
         log.debug('Error on line {}'.format(sys.exc_info()[-1].tb_lineno))
 
 
-class BPYExternallClient(bpy.types.Operator, object):
+class BPY_OT_externallclient(Operator):
 
     bl_idname = "wm.bpy_externall_server"
     bl_label = "Start and stop Externall server"
 
     _timer = None
-    speed = FloatProperty()
-    mode = StringProperty()
+    #speed = FloatProperty()
+    #mode = StringProperty()
+    speed : FloatProperty()
+    mode : StringProperty()
 
     def process(self):
         fp = filepath_read_handler()
@@ -140,7 +143,8 @@ class BPYExternallClient(bpy.types.Operator, object):
             log.info("Entering modal operator...")
             statemachine['status'] = RUNNING
             wm = context.window_manager
-            self._timer = wm.event_timer_add(self.speed, context.window)
+            #self._timer = wm.event_timer_add(self.speed, context.window)
+            self._timer = wm.event_timer_add(self.speed, window=context.window)
             wm.modal_handler_add(self)
 
         if type_op == 'end':
@@ -156,9 +160,10 @@ class BPYExternallClient(bpy.types.Operator, object):
         wm.event_timer_remove(self._timer)
 
 
-class BPYExternallPanel(bpy.types.Panel):
+class BPY_PT_externallpanel(Panel):
 
-    bl_idname = "BPYExternallPanel"
+    #bl_idname = "BPYExternallPanel"
+    bl_idname = "BPY_PT_externallpanel"
     bl_label = "bpy externall panel"
     bl_space_type = 'TEXT_EDITOR'
     bl_region_type = 'UI'
@@ -184,20 +189,8 @@ class BPYExternallPanel(bpy.types.Panel):
             op.mode = tstr
             op.speed = 1
 
-
-def register():
-    bpy.utils.register_class(BPYExternallPanel)
-    bpy.utils.register_class(BPYExternallClient)
-
-
-def unregister():
-    try:
-        bpy.ops.wm.bpy_externall_server(mode="end")
-    except:
-        pass
-    bpy.utils.unregister_class(BPYExternallPanel)
-    bpy.utils.unregister_class(BPYExternallClient)
-
+classes = (BPY_PT_externallpanel, BPY_OT_externallclient) 
+register, unregister = bpy.utils.register_classes_factory(classes)
 
 if __name__ == '__main__':
     register()
