@@ -164,7 +164,7 @@ class BPY_PT_externallpanel(Panel):
 
     #bl_idname = "BPYExternallPanel"
     bl_idname = "BPY_PT_externallpanel"
-    bl_label = "bpy externall panel"
+    bl_label = "BPY Externall"
     bl_space_type = 'TEXT_EDITOR'
     bl_region_type = 'UI'
     # bl_options = {'DEFAULT_CLOSED'}
@@ -181,7 +181,7 @@ class BPY_PT_externallpanel(Panel):
         if state == STOPPED:
             tstr = 'start'
         elif state == RUNNING:
-            col.label('listening on ' + statemachine['tempfile'])
+            col.label(text='listening on ' + statemachine['tempfile'])
             tstr = 'end'
 
         if tstr:
