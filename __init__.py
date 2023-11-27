@@ -101,7 +101,8 @@ def execute_file(fp):
     log.debug(text)
 
     try:
-        bpy.ops.text.run_script(ctx)
+        with bpy.context.temp_override(**ctx):
+            bpy.ops.text.run_script()
     except Exception as err:
         log.error('ERROR: {}'.format(str(err)))
         log.debug(sys.exc_info()[-1].tb_frame.f_code)
