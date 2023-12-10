@@ -101,7 +101,8 @@ def execute_file(fp):
     log.debug(text)
 
     try:
-        bpy.ops.text.run_script(ctx)
+        with bpy.context.temp_override(**ctx):
+            bpy.ops.text.run_script()
     except Exception as err:
         log.error('ERROR: {}'.format(str(err)))
         log.debug(sys.exc_info()[-1].tb_frame.f_code)
@@ -164,7 +165,7 @@ class BPY_PT_externallpanel(Panel):
 
     #bl_idname = "BPYExternallPanel"
     bl_idname = "BPY_PT_externallpanel"
-    bl_label = "bpy externall panel"
+    bl_label = "BPY Externall"
     bl_space_type = 'TEXT_EDITOR'
     bl_region_type = 'UI'
     # bl_options = {'DEFAULT_CLOSED'}
@@ -181,7 +182,7 @@ class BPY_PT_externallpanel(Panel):
         if state == STOPPED:
             tstr = 'start'
         elif state == RUNNING:
-            col.label('listening on ' + statemachine['tempfile'])
+            col.label(text='listening on ' + statemachine['tempfile'])
             tstr = 'end'
 
         if tstr:
