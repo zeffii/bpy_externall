@@ -20,7 +20,7 @@ bl_info = {
     "name": "Externall",
     "author": "Dealga McArdle, italic",
     "version": (0, 2),
-    "blender": (2, 80, 0),
+    "blender": (4, 0, 0),
     "location": "Blender Text Editor -> Tools, various text editors: Vim, Sublime, Atom",
     "description": "Connect with external text editors in a generic way",
     "wiki_url": "https://github.com/zeffii/bpy_externall",
@@ -30,14 +30,14 @@ bl_info = {
 }
 
 
-import sys
-import os
 import logging
+import os
+import sys
 import tempfile
 from pathlib import Path
 
 import bpy
-from bpy.props import StringProperty, FloatProperty
+from bpy.props import FloatProperty, StringProperty
 from bpy.types import Operator, Panel
 
 logging.basicConfig(
@@ -86,7 +86,7 @@ def filepath_read_handler():
     return fp.strip()
 
 
-def execute_file(fp):
+def execute_file(fp, context):
     texts = bpy.data.texts
     tf = 'temp_file'
     if tf in texts:
@@ -101,7 +101,8 @@ def execute_file(fp):
     log.debug(text)
 
     try:
-        bpy.ops.text.run_script(ctx)
+        with context.temp_override(edit_text=text):
+            bpy.ops.text.run_script()
     except Exception as err:
         log.error('ERROR: {}'.format(str(err)))
         log.debug(sys.exc_info()[-1].tb_frame.f_code)
@@ -119,12 +120,12 @@ class BPY_OT_externallclient(Operator):
     speed : FloatProperty()
     mode : StringProperty()
 
-    def process(self):
+    def process(self, context):
         fp = filepath_read_handler()
         log.debug('Processing: {}'.format(fp))
         if fp:
             logging.debug('-- action {}'.format(fp))
-            execute_file(fp)
+            execute_file(fp, context)
 
     def modal(self, context, event):
         if statemachine['status'] == STOPPED:
@@ -135,7 +136,7 @@ class BPY_OT_externallclient(Operator):
         if not (event.type == 'TIMER'):
             return {'PASS_THROUGH'}
 
-        self.process()
+        self.process(context)
         return {'PASS_THROUGH'}
 
     def event_dispatcher(self, context, type_op):
@@ -189,7 +190,7 @@ class BPY_PT_externallpanel(Panel):
             op.mode = tstr
             op.speed = 1
 
-classes = (BPY_PT_externallpanel, BPY_OT_externallclient) 
+classes = (BPY_PT_externallpanel, BPY_OT_externallclient)
 register, unregister = bpy.utils.register_classes_factory(classes)
 
 if __name__ == '__main__':
